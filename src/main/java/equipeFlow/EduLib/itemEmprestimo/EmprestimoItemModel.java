@@ -1,5 +1,6 @@
 package equipeFlow.EduLib.itemEmprestimo;
-
+import equipeFlow.EduLib.Emprestimo.emprestimoModel;
+import equipeFlow.EduLib.Livro.LivroModel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,11 @@ public class EmprestimoItemModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "id_emprestimo")
+    private emprestimoModel emprestimo;
 
-
-
+    @ManyToOne
+    @JoinColumn(name = "id_livro")
+    private LivroModel livro;
 }

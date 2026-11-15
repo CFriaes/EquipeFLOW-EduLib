@@ -17,6 +17,15 @@ public class ClienteModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_cliente")
+    private Long id_cliente;
+
+    @Column(name = "nome_cliente")
+    private String nome_cliente;
+
+    @Column(name = "idade_cliente")
+    private Integer idade_cliente;
+
+
 
 }

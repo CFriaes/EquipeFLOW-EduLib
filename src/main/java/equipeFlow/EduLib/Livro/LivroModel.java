@@ -26,9 +26,7 @@ public class LivroModel {
     @Column(name="ano_publicação")
     private Integer ano_publicacao;
 
-    @Column(name="Quantidade_Estoque")
-    private Integer disponiveis_estoque;
-
-
+    @Column(name="quantidade_estoque")
+    private Integer quantidade_estoque;
 
 }

@@ -1,4 +1,5 @@
 package equipeFlow.EduLib.Emprestimo;
+import equipeFlow.EduLib.Cliente.ClienteModel;
 import equipeFlow.EduLib.itemEmprestimo.EmprestimoItemModel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,12 +27,14 @@ public class emprestimoModel {
     @Column(name = "data_emprestimo")
     private Date data_emprestimo;
 
-
-
     @OneToMany(
             mappedBy = "emprestimo",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<EmprestimoItemModel> itens = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "id_cliente")
+    private ClienteModel cliente;
 }

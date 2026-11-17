@@ -1,0 +1,916 @@
+{
+  "info": {
+    "_postman_id": "961d1a73-e14f-468f-872f-72c62ec9935b",
+    "name": "EduLib-API-Collection",
+    "description": "Testes do Marco 1 da EduLib API (Domínio 4).\n\nExecute com o Collection Runner NA ORDEM, com a API rodando e o H2 populado.\nAjuste as variáveis da coleção (livroIdValido, livroIdSemEstoque, termoBusca...) conforme o seed do banco.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "matricula",
+      "value": "2026001"
+    },
+    {
+      "key": "alunoNome",
+      "value": "Maria Souza"
+    },
+    {
+      "key": "livroIdValido",
+      "value": "1"
+    },
+    {
+      "key": "livroIdSemEstoque",
+      "value": "2"
+    },
+    {
+      "key": "livroIdInexistente",
+      "value": "999999"
+    },
+    {
+      "key": "emprestimoIdInexistente",
+      "value": "999999"
+    },
+    {
+      "key": "termoBusca",
+      "value": "SOA"
+    },
+    {
+      "key": "idEmprestimo",
+      "value": ""
+    },
+    {
+      "key": "dataHoje",
+      "value": ""
+    },
+    {
+      "key": "dataAtraso",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Livros",
+      "item": [
+        {
+          "name": "GET /livros - listar acervo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Retorna array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));",
+                  "pm.test(\"Livros expõem somente os campos do DTO\", () => {",
+                  "  const l = pm.response.json()[0];",
+                  "  if (!l) return;",
+                  "  [\"id_livro\",\"titulo\",\"autor\",\"isbn\",\"exemplares_disponiveis\"].forEach(k => pm.expect(l).to.have.property(k));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/livros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "livros"
+              ]
+            },
+            "description": "Contrato: 200 OK com array de livros."
+          }
+        },
+        {
+          "name": "GET /livros?busca=termo - busca com resultado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Retorna array com ao menos 1 livro\", () => pm.expect(pm.response.json()).to.be.an(\"array\").that.is.not.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/livros?busca={{termoBusca}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "livros"
+              ],
+              "query": [
+                {
+                  "key": "busca",
+                  "value": "{{termoBusca}}"
+                }
+              ]
+            },
+            "description": "Ajuste a variável termoBusca para um título existente no seed do H2."
+          }
+        },
+        {
+          "name": "GET /livros?busca=inexistente - sem resultado (200, array vazio)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Array vazio\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/livros?busca=zzzNaoExisteXyz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "livros"
+              ],
+              "query": [
+                {
+                  "key": "busca",
+                  "value": "zzzNaoExisteXyz"
+                }
+              ]
+            },
+            "description": "ASSUNÇÃO: a Ficha não define 404 para busca sem resultado; esperamos 200 com []. Confirmar com o Cauan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. POST /emprestimos",
+      "item": [
+        {
+          "name": "POST /emprestimos - sucesso (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "",
+                  "const j = pm.response.json();",
+                  "[\"id_emprestimo\",\"aluno_matricula\",\"livro_titulo\",\"data_emprestimo\",\"data_devolucao_prevista\",\"data_devolucao_real\",\"multa_cobrada_reais\",\"status\"]",
+                  "  .forEach(k => pm.expect(j, \"campo \" + k).to.have.property(k));",
+                  "",
+                  "pm.test(\"Empréstimo nasce ATIVO, sem devolução real e sem multa\", () => {",
+                  "  pm.expect(j.status).to.eql(\"ATIVO\");",
+                  "  pm.expect(j.data_devolucao_real).to.be.null;",
+                  "  pm.expect(j.multa_cobrada_reais).to.eql(0);",
+                  "});",
+                  "pm.test(\"Prazo previsto = data do empréstimo + 14 dias\", () => {",
+                  "  const ini = new Date(j.data_emprestimo + \"T00:00:00Z\");",
+                  "  const fim = new Date(j.data_devolucao_prevista + \"T00:00:00Z\");",
+                  "  pm.expect((fim - ini) / 86400000).to.eql(14);",
+                  "});",
+                  "pm.collectionVariables.set(\"idEmprestimo\", String(j.id_emprestimo));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos"
+              ]
+            },
+            "description": "Guarda id_emprestimo em {{idEmprestimo}} para as próximas requisições.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aluno_matricula\": \"{{matricula}}\",\n  \"aluno_nome\": \"{{alunoNome}}\",\n  \"livro_id\": \"{{livroIdValido}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /emprestimos - livro inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Corpo no formato de erro padronizado\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.property(\"codigo_erro\");",
+                  "  pm.expect(j).to.have.property(\"mensagem\");",
+                  "  pm.expect(j).to.have.property(\"timestamp\");",
+                  "  pm.expect(Object.keys(j)).to.have.lengthOf(3);",
+                  "});",
+                  "pm.test(\"codigo_erro = RECURSO_NAO_ENCONTRADO\", () => pm.expect(pm.response.json().codigo_erro).to.eql(\"RECURSO_NAO_ENCONTRADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aluno_matricula\": \"{{matricula}}\",\n  \"aluno_nome\": \"{{alunoNome}}\",\n  \"livro_id\": \"{{livroIdInexistente}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /emprestimos - sem exemplares (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Corpo no formato de erro padronizado\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.property(\"codigo_erro\");",
+                  "  pm.expect(j).to.have.property(\"mensagem\");",
+                  "  pm.expect(j).to.have.property(\"timestamp\");",
+                  "  pm.expect(Object.keys(j)).to.have.lengthOf(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos"
+              ]
+            },
+            "description": "Requer no seed um livro com exemplares_disponiveis = 0 (variável livroIdSemEstoque).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aluno_matricula\": \"{{matricula}}\",\n  \"aluno_nome\": \"{{alunoNome}}\",\n  \"livro_id\": \"{{livroIdSemEstoque}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /emprestimos - campos obrigatórios ausentes (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Corpo no formato de erro padronizado\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.property(\"codigo_erro\");",
+                  "  pm.expect(j).to.have.property(\"mensagem\");",
+                  "  pm.expect(j).to.have.property(\"timestamp\");",
+                  "  pm.expect(Object.keys(j)).to.have.lengthOf(3);",
+                  "});",
+                  "pm.test(\"codigo_erro = VALIDACAO_INVALIDA\", () => pm.expect(pm.response.json().codigo_erro).to.eql(\"VALIDACAO_INVALIDA\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos"
+              ]
+            },
+            "description": "Depende de @NotBlank/@NotNull nos DTOs de entrada (Brad).",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /emprestimos - JSON malformado (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Corpo no formato de erro padronizado\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.property(\"codigo_erro\");",
+                  "  pm.expect(j).to.have.property(\"mensagem\");",
+                  "  pm.expect(j).to.have.property(\"timestamp\");",
+                  "  pm.expect(Object.keys(j)).to.have.lengthOf(3);",
+                  "});",
+                  "pm.test(\"codigo_erro = CORPO_INVALIDO\", () => pm.expect(pm.response.json().codigo_erro).to.eql(\"CORPO_INVALIDO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"aluno_matricula\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. GET /emprestimos/aluno/{matricula}",
+      "item": [
+        {
+          "name": "GET empréstimos do aluno (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Array com ao menos 1 empréstimo, todos do aluno\", () => {",
+                  "  const a = pm.response.json();",
+                  "  pm.expect(a).to.be.an(\"array\").that.is.not.empty;",
+                  "  a.forEach(e => pm.expect(String(e.aluno_matricula)).to.eql(pm.collectionVariables.get(\"matricula\")));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/aluno/{{matricula}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "aluno",
+                "{{matricula}}"
+              ]
+            },
+            "description": "Execute depois do POST de sucesso."
+          }
+        },
+        {
+          "name": "GET empréstimos de aluno sem histórico (200, array vazio)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Array vazio\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/aluno/MATRICULA-SEM-EMPRESTIMOS",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "aluno",
+                "MATRICULA-SEM-EMPRESTIMOS"
+              ]
+            },
+            "description": "ASSUNÇÃO: a Ficha não define 404 neste endpoint; esperamos 200 com []. Confirmar com o Cauan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. PUT /emprestimos/{id}/devolucao",
+      "item": [
+        {
+          "name": "PUT devolução no prazo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const j = pm.response.json();",
+                  "[\"id_emprestimo\",\"aluno_matricula\",\"livro_titulo\",\"data_emprestimo\",\"data_devolucao_prevista\",\"data_devolucao_real\",\"multa_cobrada_reais\",\"status\"]",
+                  "  .forEach(k => pm.expect(j, \"campo \" + k).to.have.property(k));",
+                  "",
+                  "pm.test(\"Devolvido no prazo: DEVOLVIDO, data real preenchida, multa 0\", () => {",
+                  "  pm.expect(j.status).to.eql(\"DEVOLVIDO\");",
+                  "  pm.expect(j.data_devolucao_real).to.eql(pm.collectionVariables.get(\"dataHoje\"));",
+                  "  pm.expect(j.multa_cobrada_reais).to.eql(0);",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const hoje = new Date();",
+                  "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
+                  "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
+                  "pm.collectionVariables.set(\"dataAtraso\", fmt(atraso));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/{{idEmprestimo}}/devolucao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "{{idEmprestimo}}",
+                "devolucao"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_devolucao_real\": \"{{dataHoje}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT devolução repetida (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Corpo no formato de erro padronizado\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.property(\"codigo_erro\");",
+                  "  pm.expect(j).to.have.property(\"mensagem\");",
+                  "  pm.expect(j).to.have.property(\"timestamp\");",
+                  "  pm.expect(Object.keys(j)).to.have.lengthOf(3);",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const hoje = new Date();",
+                  "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
+                  "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
+                  "pm.collectionVariables.set(\"dataAtraso\", fmt(atraso));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/{{idEmprestimo}}/devolucao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "{{idEmprestimo}}",
+                "devolucao"
+              ]
+            },
+            "description": "Empréstimo já encerrado na requisição anterior.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_devolucao_real\": \"{{dataHoje}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT devolução - id inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Corpo no formato de erro padronizado\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.property(\"codigo_erro\");",
+                  "  pm.expect(j).to.have.property(\"mensagem\");",
+                  "  pm.expect(j).to.have.property(\"timestamp\");",
+                  "  pm.expect(Object.keys(j)).to.have.lengthOf(3);",
+                  "});",
+                  "pm.test(\"codigo_erro = RECURSO_NAO_ENCONTRADO\", () => pm.expect(pm.response.json().codigo_erro).to.eql(\"RECURSO_NAO_ENCONTRADO\"));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const hoje = new Date();",
+                  "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
+                  "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
+                  "pm.collectionVariables.set(\"dataAtraso\", fmt(atraso));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/{{emprestimoIdInexistente}}/devolucao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "{{emprestimoIdInexistente}}",
+                "devolucao"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_devolucao_real\": \"{{dataHoje}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT devolução - data em formato inválido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Corpo no formato de erro padronizado\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.property(\"codigo_erro\");",
+                  "  pm.expect(j).to.have.property(\"mensagem\");",
+                  "  pm.expect(j).to.have.property(\"timestamp\");",
+                  "  pm.expect(Object.keys(j)).to.have.lengthOf(3);",
+                  "});",
+                  "pm.test(\"codigo_erro = CORPO_INVALIDO\", () => pm.expect(pm.response.json().codigo_erro).to.eql(\"CORPO_INVALIDO\"));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const hoje = new Date();",
+                  "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
+                  "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
+                  "pm.collectionVariables.set(\"dataAtraso\", fmt(atraso));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/{{idEmprestimo}}/devolucao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "{{idEmprestimo}}",
+                "devolucao"
+              ]
+            },
+            "description": "Formato exigido: YYYY-MM-DD. Pode retornar VALIDACAO_INVALIDA dependendo do DTO; ajuste o código se necessário.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_devolucao_real\": \"31/12/2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Setup multa: POST novo empréstimo (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "",
+                  "const j = pm.response.json();",
+                  "[\"id_emprestimo\",\"aluno_matricula\",\"livro_titulo\",\"data_emprestimo\",\"data_devolucao_prevista\",\"data_devolucao_real\",\"multa_cobrada_reais\",\"status\"]",
+                  "  .forEach(k => pm.expect(j, \"campo \" + k).to.have.property(k));",
+                  "",
+                  "pm.test(\"Empréstimo nasce ATIVO, sem devolução real e sem multa\", () => {",
+                  "  pm.expect(j.status).to.eql(\"ATIVO\");",
+                  "  pm.expect(j.data_devolucao_real).to.be.null;",
+                  "  pm.expect(j.multa_cobrada_reais).to.eql(0);",
+                  "});",
+                  "pm.test(\"Prazo previsto = data do empréstimo + 14 dias\", () => {",
+                  "  const ini = new Date(j.data_emprestimo + \"T00:00:00Z\");",
+                  "  const fim = new Date(j.data_devolucao_prevista + \"T00:00:00Z\");",
+                  "  pm.expect((fim - ini) / 86400000).to.eql(14);",
+                  "});",
+                  "pm.collectionVariables.set(\"idEmprestimo\", String(j.id_emprestimo));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos"
+              ]
+            },
+            "description": "Cria um novo empréstimo para testar a multa. Substitui {{idEmprestimo}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aluno_matricula\": \"{{matricula}}\",\n  \"aluno_nome\": \"{{alunoNome}}\",\n  \"livro_id\": \"{{livroIdValido}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT devolução com atraso: multa R$ 15,00 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Devolução 20 dias após o empréstimo: 6 dias de atraso x R$ 2,50 = R$ 15,00\", () => {",
+                  "  pm.expect(j.status).to.eql(\"DEVOLVIDO\");",
+                  "  pm.expect(j.multa_cobrada_reais).to.eql(15);",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const hoje = new Date();",
+                  "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
+                  "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
+                  "pm.collectionVariables.set(\"dataAtraso\", fmt(atraso));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/{{idEmprestimo}}/devolucao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "{{idEmprestimo}}",
+                "devolucao"
+              ]
+            },
+            "description": "Usa data = hoje + 20 dias (14 de prazo + 6 de atraso).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_devolucao_real\": \"{{dataAtraso}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

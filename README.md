@@ -103,7 +103,7 @@ Todas são opcionais. Sem elas, a API usa os valores padrão, próprios para rod
 | `DB_URL` | Endereço (JDBC) do banco de dados | `jdbc:h2:file:./data/edulib` |
 | `DB_USER` | Usuário do banco | `sa` |
 | `DB_PASSWORD` | Senha do banco | (vazia) |
-| `DDL_AUTO` | Como o Hibernate trata as tabelas | `update` |
+| `DDL_AUTO` | Como o Hibernate trata as tabelas | `validate` |
 
 ## Banco de dados
 

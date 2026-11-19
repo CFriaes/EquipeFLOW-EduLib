@@ -24,7 +24,6 @@ public class LivroController {
     @GetMapping
     public ResponseEntity<List<LivroDTO>> buscarLivros(
             @RequestParam(name = "busca", required = false) String busca) {
-
         return ResponseEntity.ok(livroService.buscarLivros(busca));
     }
 }

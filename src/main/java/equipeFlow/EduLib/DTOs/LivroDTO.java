@@ -14,7 +14,7 @@ import lombok.Setter;
 public class LivroDTO {
 
     @JsonProperty("id_livro")
-    private String idLivro;
+    private Long idLivro;
 
     @JsonProperty("titulo")
     private String titulo;

@@ -18,7 +18,7 @@ import java.time.LocalDate;
 public class EmprestimoDTO {
 
     @JsonProperty("id_emprestimo")
-    private String idEmprestimo;
+    private Long idEmprestimo;
 
     @JsonProperty("aluno_matricula")
     private String alunoMatricula;

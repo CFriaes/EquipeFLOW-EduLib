@@ -1,6 +1,4 @@
-package equipeFlow.EduLib.itemEmprestimo;
-import equipeFlow.EduLib.Emprestimo.emprestimoModel;
-import equipeFlow.EduLib.Livro.LivroModel;
+package equipeFlow.EduLib.Models;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

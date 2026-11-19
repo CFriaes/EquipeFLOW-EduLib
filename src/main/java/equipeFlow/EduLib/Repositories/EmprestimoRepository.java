@@ -1,4 +1,4 @@
-package equipeFlow.EduLib.Emprestimo;
+package equipeFlow.EduLib.Repositories;
 
 public interface EmprestimoRepository {
 }

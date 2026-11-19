@@ -1,4 +1,4 @@
-package equipeFlow.EduLib.Livro;
+package equipeFlow.EduLib.Models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,15 +18,17 @@ public class LivroModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id_livro")
-    private Long id_livro;
+    private String idLivro;
 
-    @Column(name="título")
+    @Column(name="titulo")
     private String titulo;
 
-    @Column(name="ano_publicação")
-    private Integer ano_publicacao;
+    @Column(name = "autor")
+    private String autor;
 
     @Column(name="quantidade_estoque")
-    private Integer quantidade_estoque;
+    private Integer exemplaresDisponiveis;
 
+    @Column(name = "isbn")
+    private String isbn;
 }

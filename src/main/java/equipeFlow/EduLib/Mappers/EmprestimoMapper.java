@@ -6,6 +6,7 @@ import equipeFlow.EduLib.Models.AlunoModel;
 import equipeFlow.EduLib.Models.EmprestimoItemModel;
 import equipeFlow.EduLib.Models.LivroModel;
 import equipeFlow.EduLib.Models.EmprestimoModel;
+import equipeFlow.EduLib.Utils.IdPublico;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,7 +35,9 @@ public class EmprestimoMapper {
 
         EmprestimoDTO dto = new EmprestimoDTO();
 
-        dto.setIdEmprestimo(emprestimo.getId_emprestimo().toString());
+        dto.setIdEmprestimo(
+                IdPublico.formatarEmprestimo(emprestimo.getId_emprestimo())
+        );
 
         dto.setAlunoMatricula(emprestimo.getAluno().getMatricula());
 

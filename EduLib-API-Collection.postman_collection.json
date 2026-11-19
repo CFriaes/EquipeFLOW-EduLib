@@ -20,19 +20,19 @@
     },
     {
       "key": "livroIdValido",
-      "value": "1"
+      "value": "LIV-1"
     },
     {
       "key": "livroIdSemEstoque",
-      "value": "2"
+      "value": "LIV-2"
     },
     {
       "key": "livroIdInexistente",
-      "value": "999999"
+      "value": "LIV-999999"
     },
     {
       "key": "emprestimoIdInexistente",
-      "value": "999999"
+      "value": "EMP-999999"
     },
     {
       "key": "termoBusca",

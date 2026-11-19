@@ -13,6 +13,7 @@ import equipeFlow.EduLib.Models.EmprestimoModel;
 import equipeFlow.EduLib.Repositories.AlunoRepository;
 import equipeFlow.EduLib.Repositories.EmprestimoRepository;
 import equipeFlow.EduLib.Repositories.livroRespository;
+import equipeFlow.EduLib.Utils.IdPublico;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,10 +63,7 @@ public class EmprestimoService {
         }
 
 
-        Long idLivro = converterId(
-                dados.getLivroId(),
-                "livro"
-        );
+        Long idLivro = IdPublico.extrairLivro(dados.getLivroId());
 
 
         LivroModel livro = livroRepository
@@ -138,10 +136,7 @@ public class EmprestimoService {
             String idEmprestimo,
             DevolucaoDTO dados) {
 
-        Long id = converterId(
-                idEmprestimo,
-                "empréstimo"
-        );
+        Long id = IdPublico.extrairEmprestimo(idEmprestimo);
 
         // Buscar empréstimo
         EmprestimoModel emprestimo =
@@ -224,23 +219,4 @@ public class EmprestimoService {
         );
     }
 
-    // Método auxiliar para validar IDs numéricos
-    private Long converterId(String valor, String recurso) {
-
-        try {
-            Long id = Long.valueOf(valor);
-
-            if (id <= 0) {
-                throw new NumberFormatException();
-            }
-
-            return id;
-
-        } catch (NumberFormatException ex) {
-
-            throw new RegraNegocioException(
-                    "Identificador de " + recurso + " inválido"
-            );
-        }
-    }
 }

@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface livroRespository extends JpaRepository<LivroModel, Long> {
-    List<LivroModel> findByTitulo(String livro);
+    List<LivroModel> findByTituloContainingIgnoreCase(String titulo);
 }

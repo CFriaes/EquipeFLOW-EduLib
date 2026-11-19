@@ -18,7 +18,7 @@ public class LivroModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id_livro")
-    private String idLivro;
+    private Long idLivro;
 
     @Column(name="titulo")
     private String Titulo;

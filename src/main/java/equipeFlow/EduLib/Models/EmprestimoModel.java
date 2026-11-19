@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -17,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name="tb_emprestimo")
 @Entity
-public class emprestimoModel {
+public class EmprestimoModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -5,7 +5,7 @@ import equipeFlow.EduLib.DTOs.EmprestimoDTO;
 import equipeFlow.EduLib.Models.AlunoModel;
 import equipeFlow.EduLib.Models.EmprestimoItemModel;
 import equipeFlow.EduLib.Models.LivroModel;
-import equipeFlow.EduLib.Models.emprestimoModel;
+import equipeFlow.EduLib.Models.EmprestimoModel;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,8 +13,8 @@ import java.util.ArrayList;
 @Component
 public class EmprestimoMapper {
 
-    emprestimoModel toEntity(AlunoModel aluno, LivroModel livro) {
-        emprestimoModel emprestimo = new emprestimoModel();
+    public EmprestimoModel toEntity(AlunoModel aluno, LivroModel livro) {
+        EmprestimoModel emprestimo = new EmprestimoModel();
 
         emprestimo.setAluno(aluno);
 
@@ -30,11 +30,11 @@ public class EmprestimoMapper {
         return emprestimo;
     }
 
-    public EmprestimoDTO toDTO(emprestimoModel emprestimo) {
+    public EmprestimoDTO toDTO(EmprestimoModel emprestimo) {
 
         EmprestimoDTO dto = new EmprestimoDTO();
 
-        dto.setIdEmprestimo(emprestimo.getId_emprestimo());
+        dto.setIdEmprestimo(emprestimo.getId_emprestimo().toString());
 
         dto.setAlunoMatricula(emprestimo.getAluno().getMatricula());
 
@@ -68,7 +68,7 @@ public class EmprestimoMapper {
         return dto;
     }
 
-    public void updateEntity(DevolucaoDTO dto, emprestimoModel emprestimo) {
+    public void updateEntity(DevolucaoDTO dto, EmprestimoModel emprestimo) {
 
         emprestimo.setData_devolucao_real(dto.getDataDevolucaoReal());
 

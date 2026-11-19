@@ -19,7 +19,7 @@ public class EmprestimoItemModel {
 
     @ManyToOne
     @JoinColumn(name = "id_emprestimo")
-    private emprestimoModel emprestimo;
+    private EmprestimoModel emprestimo;
 
     @ManyToOne
     @JoinColumn(name = "id_livro")

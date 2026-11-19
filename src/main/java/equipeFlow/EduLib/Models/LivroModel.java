@@ -21,7 +21,7 @@ public class LivroModel {
     private String idLivro;
 
     @Column(name="titulo")
-    private String titulo;
+    private String Titulo;
 
     @Column(name = "autor")
     private String autor;

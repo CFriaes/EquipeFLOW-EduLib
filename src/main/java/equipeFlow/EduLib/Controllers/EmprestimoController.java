@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import equipeFlow.EduLib.DTOs.CriarEmprestimoDTO;
 import equipeFlow.EduLib.DTOs.DevolucaoDTO;
 import equipeFlow.EduLib.DTOs.EmprestimoDTO;
-import equipeFlow.EduLib.Emprestimo.EmprestimoService;
+import equipeFlow.EduLib.Service.EmprestimoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,8 +48,7 @@ public class EmprestimoController {
     @Resposta400
     @Resposta404
     @PostMapping
-    public ResponseEntity<EmprestimoDTO> criarEmprestimo(
-            @Valid @RequestBody CriarEmprestimoDTO dados) {
+    public ResponseEntity<EmprestimoDTO> criarEmprestimo(@Valid @RequestBody CriarEmprestimoDTO dados) {
 
         EmprestimoDTO emprestimo = emprestimoService.criarEmprestimo(dados);
         return ResponseEntity.status(HttpStatus.CREATED).body(emprestimo);

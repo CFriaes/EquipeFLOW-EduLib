@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 /**
  * Tratamento centralizado de exceções. Nunca devolve stack trace nem 500 genérico
  * com detalhes internos (Regra de Ouro 3 do Roteiro).
- * O escopo é limitado ao pacote da aplicação para não interferir nos endpoints do springdoc.
+ * Aplica o mesmo formato de erro a toda a API, inclusive quando o verbo HTTP é inválido.
  */
-@RestControllerAdvice(basePackages = "equipeFlow.EduLib")
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

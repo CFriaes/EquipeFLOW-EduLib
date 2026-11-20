@@ -30,7 +30,7 @@ public class LivroService {
         } else {
 
             livros = livroRepository
-                    .findByTitulo(busca.trim());
+                    .findByTituloContainingIgnoreCase(busca.trim());
         }
 
         return livros.stream()

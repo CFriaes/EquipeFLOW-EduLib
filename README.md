@@ -13,6 +13,7 @@ Domínio de negócio: **Domínio 4 — Educação & Biblioteca**.
 - Cauan Friaes (@CFriaes-github)
 - Eliel Monteiro (@ElielDev01-github)
 - João Guilherme (@Joaogui2004-github)
+- Gabriel Aian (@Gabriel-Aian)
 
 ## Tecnologias
 

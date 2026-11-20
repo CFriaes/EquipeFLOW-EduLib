@@ -18,7 +18,7 @@ Domínio de negócio: **Domínio 4 — Educação & Biblioteca**.
 
 | Ferramenta | Versão |
 |---|---|
-| Java (JDK) | 27 |
+| Java (JDK) | 17 |
 | Spring Boot | 4.1.2 |
 | Maven (via Maven Wrapper) | 3.10.0 |
 | Spring Data JPA (Hibernate) | gerenciada pelo Spring Boot |
@@ -28,7 +28,7 @@ Domínio de negócio: **Domínio 4 — Educação & Biblioteca**.
 
 ## Requisitos
 
-- **JDK 27** instalado (confira com `java -version`)
+- **JDK 17 ou superior** instalado (confira com `java -version`)
 - **Git**
 
 Não é preciso instalar o Maven: o projeto usa o Maven Wrapper (`mvnw` / `mvnw.cmd`),

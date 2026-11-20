@@ -120,4 +120,47 @@ class IdsTextuaisTest {
         assertEquals(2, livro.getExemplaresDisponiveis());
         verify(emprestimos).findById(1L);
     }
+
+    @Test
+    void calculaMultaPorSeisDiasDeAtraso() {
+        AlunoRepository alunos = mock(AlunoRepository.class);
+        livroRespository livros = mock(livroRespository.class);
+        EmprestimoRepository emprestimos = mock(EmprestimoRepository.class);
+
+        AlunoModel aluno = new AlunoModel();
+        aluno.setMatricula("2026001");
+
+        LivroModel livro = new LivroModel();
+        livro.setIdLivro(1L);
+        livro.setTitulo("SOA na Prática");
+        livro.setExemplaresDisponiveis(1);
+
+        EmprestimoModel emprestimo = new EmprestimoModel();
+        emprestimo.setId_emprestimo(10L);
+        emprestimo.setAluno(aluno);
+        emprestimo.setStatus("ATIVO");
+        emprestimo.setData_emprestimo(LocalDate.now().minusDays(20));
+        emprestimo.setData_devolucao_prevista(LocalDate.now().minusDays(6));
+
+        EmprestimoItemModel item = new EmprestimoItemModel();
+        item.setEmprestimo(emprestimo);
+        item.setLivro(livro);
+        emprestimo.setItens(List.of(item));
+
+        when(emprestimos.findById(10L)).thenReturn(Optional.of(emprestimo));
+        when(emprestimos.save(emprestimo)).thenReturn(emprestimo);
+
+        DevolucaoDTO dados = new DevolucaoDTO();
+        dados.setDataDevolucaoReal(LocalDate.now());
+
+        EmprestimoService service = new EmprestimoService(
+                emprestimos, alunos, livros, new EmprestimoMapper()
+        );
+        EmprestimoDTO resultado = service.registrarDevolucao("EMP-10", dados);
+
+        assertEquals("DEVOLVIDO", resultado.getStatus());
+        assertEquals(0, resultado.getMultaCobradaReais().compareTo(new java.math.BigDecimal("15.00")));
+        assertEquals(2, livro.getExemplaresDisponiveis());
+        verify(emprestimos).findById(10L);
+    }
 }

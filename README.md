@@ -9,10 +9,12 @@ Domínio de negócio: **Domínio 4 — Educação & Biblioteca**.
 
 ## Equipe
 
-- Bradsson Santos (@brad38-github)
-- Cauan Friaes (@CFriaes-github)
-- Eliel Monteiro (@ElielDev01-github)
-- João Guilherme (@Joaogui2004-github)
+| Nome | GitHub |
+|---|---|
+| Bradsson Santos | [@brad38](https://github.com/brad38) |
+| Cauan Friaes | [@CFriaes](https://github.com/CFriaes) |
+| Eliel Monteiro | [@ElielDev01](https://github.com/ElielDev01) |
+| João Guilherme | [@Joaogui2004](https://github.com/Joaogui2004) |
 
 ## Tecnologias
 

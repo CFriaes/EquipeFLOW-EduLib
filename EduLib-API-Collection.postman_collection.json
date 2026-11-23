@@ -544,7 +544,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const fmt = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10);",
                   "const hoje = new Date();",
                   "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
                   "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
@@ -610,7 +610,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const fmt = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10);",
                   "const hoje = new Date();",
                   "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
                   "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
@@ -677,7 +677,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const fmt = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10);",
                   "const hoje = new Date();",
                   "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
                   "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
@@ -744,7 +744,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const fmt = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10);",
                   "const hoje = new Date();",
                   "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
                   "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
@@ -787,7 +787,7 @@
           }
         },
         {
-          "name": "Setup multa: POST novo empréstimo (201)",
+          "name": "Setup para teste de data futura: POST novo empréstimo (201)",
           "event": [
             {
               "listen": "test",
@@ -834,7 +834,7 @@
                 "emprestimos"
               ]
             },
-            "description": "Cria um novo empréstimo para testar a multa. Substitui {{idEmprestimo}}.",
+            "description": "Cria um empréstimo para testar a rejeição de data futura e a devolução válida posterior.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"aluno_matricula\": \"{{matricula}}\",\n  \"aluno_nome\": \"{{alunoNome}}\",\n  \"livro_id\": \"{{livroIdValido}}\"\n}",
@@ -847,18 +847,19 @@
           }
         },
         {
-          "name": "PUT devolução com atraso: multa R$ 15,00 (200)",
+          "name": "PUT devolução com data futura (400)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Status 400: devolução futura inválida\", () => pm.response.to.have.status(400));",
                   "const j = pm.response.json();",
-                  "pm.test(\"Devolução 20 dias após o empréstimo: 6 dias de atraso x R$ 2,50 = R$ 15,00\", () => {",
-                  "  pm.expect(j.status).to.eql(\"DEVOLVIDO\");",
-                  "  pm.expect(j.multa_cobrada_reais).to.eql(15);",
+                  "pm.test(\"Erro de regra de negócio padronizado\", () => {",
+                  "  pm.expect(j.codigo_erro).to.eql(\"REGRA_DE_NEGOCIO_VIOLADA\");",
+                  "  pm.expect(j.mensagem).to.be.a(\"string\");",
+                  "  pm.expect(j.timestamp).to.be.a(\"string\");",
                   "});"
                 ]
               }
@@ -868,7 +869,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const fmt = d => d.toISOString().slice(0,10);",
+                  "const fmt = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10);",
                   "const hoje = new Date();",
                   "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
                   "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
@@ -898,10 +899,75 @@
                 "devolucao"
               ]
             },
-            "description": "Usa data = hoje + 20 dias (14 de prazo + 6 de atraso).",
+            "description": "Uma devolução em data futura deve ser rejeitada com erro padronizado.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"data_devolucao_real\": \"{{dataAtraso}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT devolução válida após tentativa futura (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Empréstimo devolvido sem multa\", () => {",
+                  "  pm.expect(j.status).to.eql(\"DEVOLVIDO\");",
+                  "  pm.expect(j.multa_cobrada_reais).to.eql(0);",
+                  "  pm.expect(j.data_devolucao_real).to.eql(pm.collectionVariables.get(\"dataHoje\"));",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const fmt = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10);",
+                  "const hoje = new Date();",
+                  "const atraso = new Date(); atraso.setDate(atraso.getDate() + 20);",
+                  "pm.collectionVariables.set(\"dataHoje\", fmt(hoje));",
+                  "pm.collectionVariables.set(\"dataAtraso\", fmt(atraso));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emprestimos/{{idEmprestimo}}/devolucao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emprestimos",
+                "{{idEmprestimo}}",
+                "devolucao"
+              ]
+            },
+            "description": "Conclui o empréstimo e devolve o exemplar ao estoque após rejeitar data futura.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_devolucao_real\": \"{{dataHoje}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
